@@ -74,6 +74,7 @@ func (s *Logger) sendLoop() {
 
 			// json encode the message
 			js, err := json.Marshal(msg)
+
 			if err != nil {
 				fmt.Println(fmt.Sprintf("[FilebeatLogger]: unable to marshal message to send to filebeat: %s", err.Error()))
 				continue
@@ -100,7 +101,7 @@ func (s *Logger) sendLoop() {
 
 func (s *Logger) sendOne(level string, message interface{}) {
 	logEntry := &LogEntry{
-		Timestamp: time.Now().UnixMilli(),
+		Timestamp: time.Now().Format(time.RFC3339),
 		Version:   1,
 		Host:      s.host,
 		Message:   message,
@@ -115,6 +116,14 @@ func (s *Logger) SetFormatter(f logger.Formatter) {
 }
 
 func (s *Logger) Emit(ctx *logger.MessageContext, message interface{}) error {
-	s.sendOne(ctx.Level, message)
+	// convert string message into struct
+	switch msg := message.(type) {
+	case string:
+		s.sendOne(ctx.Level, &StringMessage{
+			Msg: msg,
+		})
+	default:
+		s.sendOne(ctx.Level, msg)
+	}
 	return nil
 }

@@ -1,11 +1,14 @@
 package filebeat
 
+type StringMessage struct {
+	Msg string `json:"msg"`
+}
+
 type LogEntry struct {
-	Timestamp int64       `json:"@timestamp"`
+	Timestamp string      `json:"@timestamp"`
 	Version   int64       `json:"@version"`
 	Host      string      `json:"host"`
 	Message   interface{} `json:"message"`
-	Type      string      `json:"type"`
 	Channel   string      `json:"channel"`
 	Level     string      `json:"level"`
 }
