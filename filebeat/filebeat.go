@@ -88,9 +88,14 @@ func (s *Logger) sendLoop() {
 			for sent := 0; sent < length; {
 				chunk, err := s.conn.Write(js[sent:])
 				if err != nil {
-					fmt.Println(fmt.Sprintf("[FilebeatLogger]: unable to send data to socket: %s", err.Error()))
-					fmt.Println(fmt.Sprintf("%s", string(js)))
-					break
+					// try to reconnect first if that fails just write the log to stdout
+					s.connect()
+					chunk, err = s.conn.Write(js[sent:])
+					if err != nil {
+						fmt.Println(fmt.Sprintf("[FilebeatLogger]: unable to send data to socket: %s", err.Error()))
+						fmt.Println(fmt.Sprintf("%s", string(js)))
+						break
+					}
 				}
 				sent += chunk
 			}
