@@ -104,7 +104,7 @@ func SetOutput(w io.Writer) {
 
 type LoggingHandler interface {
 	SetFormatter(Formatter)
-	Emit(ctx *MessageContext, message string) error
+	Emit(ctx *MessageContext, message interface{}) error
 }
 
 type standardHandler struct {
@@ -115,7 +115,7 @@ func (l *standardHandler) SetFormatter(f Formatter) {
 	l.formatter = f
 }
 
-func (l *standardHandler) Emit(ctx *MessageContext, message string) error {
+func (l *standardHandler) Emit(ctx *MessageContext, message interface{}) error {
 	fmt.Println(l.formatter.Format(ctx, message))
 	return nil
 }
@@ -173,8 +173,8 @@ func writeMessageDepth(depth int, level string, msg string) {
 
 	err := currentHandler.Emit(ctx, msg)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error writing log message: %s\n", err)
-		fmt.Fprintln(os.Stderr, DefaultFormatter.Format(ctx, msg))
+		_, _ = fmt.Fprintf(os.Stderr, "Error writing log message: %s\n", err)
+		_, _ = fmt.Fprintln(os.Stderr, DefaultFormatter.Format(ctx, msg))
 	}
 
 }

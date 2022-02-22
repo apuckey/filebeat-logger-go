@@ -14,12 +14,12 @@ type Logger struct {
 	socket    string
 	address   string
 	host      string
-	category  string
-	channel   chan *LogEntry
+	channel   string
+	logchan   chan *LogEntry
 	formatter logger.Formatter
 }
 
-func NewFilebeatLogger(socket, category string, formatter logger.Formatter, bufferSize int) (*Logger, error) {
+func NewFilebeatLogger(socket, channel string, formatter logger.Formatter, bufferSize int) (*Logger, error) {
 
 	if socket == "" {
 		fmt.Println(fmt.Sprintf("[FilebeatLogger]: socket cannot be empty"))
@@ -28,8 +28,8 @@ func NewFilebeatLogger(socket, category string, formatter logger.Formatter, buff
 
 	l := &Logger{
 		socket:    socket,
-		category:  category,
-		channel:   make(chan *LogEntry, bufferSize),
+		channel:   channel,
+		logchan:   make(chan *LogEntry, bufferSize),
 		formatter: formatter,
 	}
 
@@ -69,7 +69,7 @@ func (s *Logger) sendLoop() {
 		}
 	}()
 
-	for msg := range s.channel {
+	for msg := range s.logchan {
 		if msg != nil {
 
 			// json encode the message
@@ -104,10 +104,10 @@ func (s *Logger) sendOne(level string, message interface{}) {
 		Version:   1,
 		Host:      s.host,
 		Message:   message,
-		Channel:   s.category,
+		Channel:   s.channel,
 		Level:     level,
 	}
-	s.channel <- logEntry
+	s.logchan <- logEntry
 }
 
 func (s *Logger) SetFormatter(f logger.Formatter) {
